@@ -7,7 +7,7 @@
   <body>
 <div id="mobile_container">
     <div id="hamburger_menu_container">
-       <p id="hamburger_menu">☰</p>
+       <p id="hamburger_menu_btn" onclick="show_hamburger_menu()">☰</p>
        <div>
         <img src="https://atlas-content-cdn.pixelsquid.com/assets_v2/325/3258989548893378054/previews/G03-200x200.jpg">
         <p>Finance</p>
@@ -54,6 +54,13 @@
     </div>
 </div>
 
+<nav id="hamburger_menu">
+  <a id="close_hamburger_menu" class="hamburger_menu_a" onclick="hide_hamburger_menu()">×</a>
+  <hr>
+  <a class="hamburger_menu_a">Home</a>
+  <a class="hamburger_menu_a">Gold</a>
+</nav>
+
 <div id="add_on_form">
     <div id="inner_add_on">
         <div id="container_close_btn">
@@ -76,6 +83,22 @@
               </div>
           </div>
         </div>
+        <br>
+
+        <div>
+          <input type="radio" name="time_type" id="hour" class="time_class_form_add" value="hour">
+          <label for="hour" class="time_label_class_form_add">Hour</label>
+          <br>
+          <input type="radio" name="time_type" id="days" class="time_class_form_add" value="day">
+          <label for="days" class="time_label_class_form_add">Days</label>
+          <br>
+          <input type="radio" name="time_type" id="months" class="time_class_form_add" value="month">
+          <label for="months" class="time_label_class_form_add">Months</label>
+          <br>
+          <input type="radio" name="time_type" id="years" class="time_class_form_add" value="year">
+          <label for="years" class="time_label_class_form_add">Years</label>
+        </div>
+
         <br>
         
         <div id="years_add">
@@ -304,6 +327,20 @@
       margin-right: 30px;
       font-size: 20px;
     }
+
+
+    .time_class_form_add {
+      width: 2vw;
+      margin-right: 20px;
+      margin-bottom: 8px;
+      margin-left: 20px;
+    }
+
+    .time_label_class_form_add {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
     
     #add_on_btn {
       font-size: 30px;
@@ -351,6 +388,43 @@
       border: none;
       padding: 0;
     }
+
+    /*Hamburger menu*/
+  #hamburger_menu {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: black;
+    width: 0vw;
+    height: 100%;
+    transition: 2s;
+  }
+
+  #hamburger_menu a {
+    justify-content: center;
+    color: grey;
+    font-size: 6vw;
+    padding: 10px 10px;
+    cursor: none;
+    margin-left: 2vw;
+    opacity: 0;
+    transition: 2.5s;
+  }
+
+  #close_hamburger_menu {
+    align-self: flex-end;
+    margin-right: 10px;
+    padding: 0;
+  }
+  
+  hr {
+    border: none;
+    border-top: 1px solid grey;
+    margin: 0;
+    width: 100%;
+  }
 </style>
 
 <script>
@@ -434,35 +508,31 @@
     }
 
     function add_chart() {
-            const years = document.getElementById("number_years").innerText;
+            const time = document.getElementById("number_years").innerText;
             const from_currency = document.getElementById("choice_from").innerText;
             const to_currency = document.getElementById("choice_to").innerText;
+            const time_type = get_time_type();
 
-            if (parseInt(years) > 30 || parseInt(years) == 0) {
+            if (parseInt(time) > 30 || parseInt(time) == 0) {
               alert("Years cannot be larger than 30 or equal to 0");
               return;
             } 
 
-            if (years == "") {
+            if (time == "") {
               alert("No number given");
               return;
             }
 
-            const token_list = ["A", "T", "P", "5", "%", "0", "7"];
-            let token = []
-            var csrf;
-
-            for (i=0; i < 23; i++) {
-                token.push(token_list[Math.floor(Math.random() * token_list.length)]);
-            }
-            csrf = token.join("");
+            if (time_type == null) {
+              alert("Please select a time type");
+            }   
 
             fetch("https://financial-graph-app-fastapi.onrender.com", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json"
                 },
-                body: JSON.stringify({"symbol": `${from_currency}/${to_currency}`, "years": parseInt(years), "csrf": csrf})
+                body: JSON.stringify({"symbol": `${from_currency}/${to_currency}`, "number": parseInt(time), "time_type": time_type})
             })
             .then(response => {
                 if (!response.ok) {
@@ -472,8 +542,8 @@
             })
             .then(data => {
                 console.log("Received:", data);
-                if (data.csrf != csrf) {
-                    alert("CSRF token been changed!");
+                if (data.interval == null) {
+                    alert("No data available");
                 }
                 document.getElementById("chart_group_mobile").innerHTML += `
                   <div class="each_chart" id=${data["id"]}>
@@ -483,6 +553,7 @@
                       </div>
                         <h1>${data["title"]}</h1>
                         <img src="data:image/png;base64,${data.img_string}"/>
+                        <p>Time interval: ${data.interval}</p>
                      </div>
                    </div>
                 `
@@ -495,6 +566,67 @@
           function clear_chart(id) {
             document.getElementById(id).style.display = "none";
           }
+
+
+          function other(link, main_body_id) {
+             const time_type = time_type();
+             fetch(`https://financial-graph-app-fastapi.onrender.com/${link}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({"time_type": time_type, "number": parseInt(number)})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    alert("Error");
+                }
+                return response.json()
+            })
+            .then(data => {
+                console.log("Received:", data);
+                document.getElementById(main_body_id).innerHTML += `
+                   
+                `
+            })
+            .catch(error => console.log(error))
+          }
+
+
+          function show_hamburger_menu() {
+     document.getElementById("hamburger_menu").style.width = "50vw";
+     Array.from(document.getElementsByClassName("hamburger_menu_a")).forEach(element => {
+       element.style.opacity = 1;
+       element.style.cursor = "pointer";
+     });
+   }
+
+   function hide_hamburger_menu() {
+     document.getElementById("hamburger_menu").style.width = "0vw";
+     Array.from(document.getElementsByClassName("hamburger_menu_a")).forEach(element => {
+       element.style.opacity = 0;
+       element.style.cursor = "none";
+     });
+   }
+
+   function get_time_type() {
+    var null_var;
+     var time_type_value;
+     const radio = Array.from(document.getElementsByName("time_type"));
+     for (i=0; i < radio.length; i++) {
+        if (radio[i].checked == true) {
+           time_type_value = radio[i].value;
+           null_var = true;
+           break;
+        }
+     }
+
+     if (time_type_value != null) {
+       return time_type_value
+     } else {
+       return null
+     }
+   }
 
       render_currencies_from();
       render_currencies_to()
