@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   </head>
   <body>
+    <div id="main">
 <div id="mobile_container">
     <div id="hamburger_menu_container">
        <p id="hamburger_menu_btn" onclick="show_hamburger_menu()">☰</p>
@@ -18,24 +19,39 @@
     
     <div id="greeting_mobile">
         <h1>Welcome Back</h1>
-        <p>Jason</p>
+        <p>Website created by:   <b>Jay Sheng</b></p>
     </div>
-     
-    <div id="chart_group_mobile">
+
+    <div id="chart_mobile_loading" style="display: none;">
+         <div class="each_chart">
+            <div id="loading_chart" class="inside_each_chart">
+              <img src="https://media1.tenor.com/m/Pq1cZiuhlEEAAAAC/rajinikanth.gif" alt="loading" style="width: 40px; height: 40px;">
+              <b style="font-size: 30px; padding: 14px;">Loading...</b>
+            </div>
+         </div>
+    </div>
+
+        <div id="chart_group_mobile">
          <div class="each_chart">
             <div id="add_chart" class="inside_each_chart">
               <b onclick="show_add_form()">+</b>
             </div>
          </div>
     </div>
+
+    <div id="chart"></div>
 </div>
 
 <nav id="hamburger_menu">
   <a id="close_hamburger_menu" class="hamburger_menu_a" onclick="hide_hamburger_menu()">×</a>
   <hr>
   <a class="hamburger_menu_a">Home</a>
-  <a class="hamburger_menu_a">Gold</a>
+  <a class="hamburger_menu_a" onclick="alert('Sorry, not available at the moment.')">BitCoin</a>
+  <a class="hamburger_menu_a" onclick="alert('Under development')">Gold</a>
+  <a class="hamburger_menu_a" onclick="alert('Under development')">Sliver</a>
+  <a class="hamburger_menu_a" onclick="alert('Under development')">Crude oil</a>
 </nav>
+
 
 <div id="add_on_form">
     <div id="inner_add_on">
@@ -60,7 +76,7 @@
           </div>
         </div>
         <br>
-
+      <div id="form">
         <div>
           <input type="radio" name="time_type" id="hour" class="time_class_form_add" value="hour">
           <label for="hour" class="time_label_class_form_add">Hour</label>
@@ -108,11 +124,42 @@
             <button onclick="number_years('0')">0</button>
             <button onclick="number_years('cancel')">×</button>
         </div>
+       <div style="display: flex; width: 100%; justify-content: center;">
         <button id="add_on_btn" onclick="add_chart()">Add</button>
+      </div>
     </div>
 </div>
+    </div>
+   </div>
+
+
+<div id="loading" style="display: flex; width: 100%; align-items: center; flex-direction: column; ">
+   <img
+  src="https://img.pikbest.com/png-images/20190918/cartoon-snail-loading-loading-gif-animation_2734139.png!bw700"
+  style=" width: 320px; height: 290px;"
+   >
+   <p>It might take a long time (about 50 seconds) for the server to restart.</p>
+   <p>You may need to refresh after a period of time loading.</p>
+</div>
+
+<img id="error"
+src="https://img.freepik.com/free-vector/404-error-abstract-concept-illustration_335657-2243.jpg?semt=ais_hybrid&w=740&q=80"
+style="display: block; margin: 0 auto; width: 320px; height: 320px;"
+>
+
 
 <style>
+   #hamburger_menu_btn {
+     cursor: pointer;
+   }
+    #loading_chart {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    #form {
+       background-color: white;
+    }
     body {
        background-color: rgb(240,240,240);
      }
@@ -134,6 +181,10 @@
         font-size: 35px;
         margin: 0;
         cursor: pointer;
+    }
+
+    .hamburger_menu_a:hover {
+      color: white !important;
     }
     
     #hamburger_menu_container div {
@@ -177,8 +228,8 @@
 
     #greeting_mobile p {
         margin: 0;
-        margin-top: 5px;
-        font-size: 30px;
+        margin-top: 20px;
+        font-size: 17px;
     }
     
     .each_chart {
@@ -336,6 +387,8 @@
       background-color: rgb(60, 118, 175);
       color: white;
       border: none;
+      width: 100%;
+      height: 50px;
     }
     
     #close_btn_add {
@@ -421,6 +474,17 @@
   .intersect {
     margin-bottom: 10px;
     margin-right: 8px;
+  }
+  
+  #number_container button {
+    background-color: rgb(241,241,241);
+    color: black;
+    border: 1px solid black;
+  }
+  
+  #number_container button:hover {
+    background-color: #00FCA8;
+    color: black;
   }
 
 </style>
@@ -522,17 +586,22 @@
     }
 
     function add_chart() {
-            const time = document.getElementById("number_years").innerText;
+            var time = document.getElementById("number_years").innerText;
             const from_currency = document.getElementById("choice_from").innerText;
             const to_currency = document.getElementById("choice_to").innerText;
             const time_type = get_time_type();
             const intersection = intersection_checked();
             var json_data;
 
-            if (parseInt(time) > 30 || parseInt(time) == 0) {
-              alert("Years cannot be larger than 30 or equal to 0");
+            if (parseInt(time) > 26 || parseInt(time) <= 0) {
+              alert("Number cannot be larger than 30 or equal to 0");
               return;
             } 
+
+            if (from_currency == to_currency) {
+               alert("Currencies cannot be the same!");
+               return;
+            }
 
             if (time == "") {
               alert("No number given");
@@ -544,13 +613,35 @@
               return;
             }   
 
-            if (typeof intersection == "string") {
-              json_data = JSON.stringify({"symbol": `${from_currency}/${to_currency}`, "number": parseInt(time), "time_type": time_type})
+            time = parseInt(time);
+            if (time > 24 && time_type == "hour") {
+               alert("Cannot be more than 24 days.");
+               return;
+            } else if (time > 24 && time_type == "month") {
+               alert("Cannot be more than 24 months.");
+               return;
+            } else if (time > 8 && time_type == "day") {
+              alert("Cannot be more than 8 days.");
+              return;
             } else {
+              //skip
+            }
+
+            if (typeof intersection == "string") {
+              json_data = JSON.stringify({"symbol": `${from_currency}/${to_currency}`, "number": time, "time_type": time_type})
+            } else {
+              if (intersection.includes(from_currency) || intersection.includes(to_currency)) {
+                     alert("Currencies cannot be the same! Check your selected checkboxes again.");
+                     return;
+              }
               intersection.push(from_currency);
               intersection.splice(0,0,to_currency);
-              json_data = JSON.stringify({"symbol": intersection, "number": parseInt(time), "time_type": time_type})
+              json_data = JSON.stringify({"symbol": intersection, "number": time, "time_type": time_type})
             }
+
+
+            document.getElementById("chart_mobile_loading").style.display = "block";
+            document.getElementById("chart_group_mobile").style.display = "none";
 
             fetch("https://financial-graph-app-fastapi.onrender.com", {
                 method: "POST",
@@ -561,18 +652,24 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    alert("Error");
+                    alert("No data available");
+                    document.getElementById("chart_mobile_loading").style.display = "none";
+                    document.getElementById("chart_group_mobile").style.display = "block";
+                    throw new Error("Request failed");
                 }
                 return response.json()
             })
             .then(data => {
                 console.log("Received:", data);
-                if (data.interval == null) {
-                    alert("No data available");
+                if (!data || !data.interval || !data.img_string) {
+                   alert("No data available");
+                   document.getElementById("chart_mobile_loading").style.display = "none";
+                   document.getElementById("chart_group_mobile").style.display = "block";
+                   throw new Error("Invalid response data");
                 }
                 console.log(data.id);
                 console.log(data.mpld3_id);
-                document.getElementById("chart_group_mobile").innerHTML += `
+                document.getElementById("chart").innerHTML += `
                   <div class="each_chart" id=${data["id"]} style='display: block;'>
                      <div class="inside_each_chart">
                       <div class="cancel_chart">
@@ -584,37 +681,14 @@
                      </div>
                    </div>
                 `;
+                document.getElementById("chart_mobile_loading").style.display = "none";
+                document.getElementById("chart_group_mobile").style.display = "block";
             })
-            .catch(error => alert(error))
+            .catch(error => alert("No data available"))
 
             close_add_form();
           }
 
-          /*
-          function other(link, main_body_id) {
-             const time_type = time_type();
-             fetch(`https://financial-graph-app-fastapi.onrender.com/${link}`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({"time_type": time_type, "number": parseInt(number)})
-            })
-            .then(response => {
-                if (!response.ok) {
-                    alert("Error");
-                }
-                return response.json()
-            })
-            .then(data => {
-                console.log("Received:", data);
-                document.getElementById(main_body_id).innerHTML += `
-                   
-                `
-            })
-            .catch(error => console.log(error))
-          }
-            */
 
           function show_hamburger_menu() {
             document.getElementById("hamburger_menu").style.width = "50vw";
@@ -675,9 +749,29 @@
      return intersection_list 
    }
 
+   function wake() {
+      document.getElementById("loading").style.display = "block";
+      document.getElementById("main").style.display = "none";
+      document.getElementById("error").style.display = "none";
+      fetch("https://financial-graph-app-fastapi.onrender.com/wake")
+      .then(response => {
+                if (!response.ok) {
+                    alert("Error");
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("main").style.display = "none";
+                    document.getElementById("error").style.display = "block";
+                } else {
+                  document.getElementById("loading").style.display = "none";
+                  document.getElementById("main").style.display = "block";
+                  document.getElementById("error").style.display = "none";
+                }
+            })
+       }
+
       render_currencies_from();
       render_currencies_to();
       render_intersection();
+      wake()
       document.getElementById("intersect_check").addEventListener("change", intersection_choice);
 </script>
 </body>
