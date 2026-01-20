@@ -725,7 +725,11 @@ th {
                 document.getElementById("chart_mobile_loading").style.display = "none";
                 document.getElementById("chart_group_mobile").style.display = "block";
             })
-            .catch(error => alert("No data available"))
+            .catch(error => {
+              alert("No data available");
+              document.getElementById("chart_mobile_loading").style.display = "none";
+              document.getElementById("chart_group_mobile").style.display = "block";
+            })
 
             close_add_form();
           }
