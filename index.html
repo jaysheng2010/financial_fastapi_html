@@ -47,7 +47,7 @@
   <hr>
   <a class="hamburger_menu_a">Home</a>
   <a class="hamburger_menu_a" onclick="alert('Sorry, not available at the moment.')">BitCoin</a>
-  <a class="hamburger_menu_a" onclick="alert('Under development')">Gold</a>
+  <a class="hamburger_menu_a" onclick="gold()">Gold</a>
   <a class="hamburger_menu_a" onclick="alert('Under development')">Sliver</a>
   <a class="hamburger_menu_a" onclick="alert('Under development')">Crude oil</a>
 </nav>
@@ -147,6 +147,19 @@ src="https://img.freepik.com/free-vector/404-error-abstract-concept-illustration
 style="display: block; margin: 0 auto; width: 320px; height: 320px;"
 >
 
+<div id="gold_container">
+    <p style="font-size: 30px; color: red; cursor: pointer; margin-left: 20px;" onclick="close_gold()">×</p>
+    <br>
+<h1 style="text-align: center;">Gold Prices</h1>
+<p style="text-align: center;">Data from: "https://freegoldapi.com/data"</p>
+<table id="gold_table">
+  <tr>
+    <th>Source</th>
+    <th>Date</th>
+    <th>Price</th>
+  </tr>
+</table>
+</div>
 
 <style>
    #hamburger_menu_btn {
@@ -488,6 +501,28 @@ style="display: block; margin: 0 auto; width: 320px; height: 320px;"
     color: black;
   }
 
+table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+tr:nth-child(even){background-color: #f2f2f2;}
+
+tr:hover {background-color: #ddd;}
+
+th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
 </style>
 
 <script>
@@ -769,11 +804,45 @@ style="display: block; margin: 0 auto; width: 320px; height: 320px;"
             })
        }
 
+       function close_gold() {
+          document.getElementById("main").style.display = "block";
+         document.getElementById("gold_container").style.display = "none";
+       }
+       
+       let gold_fetched = false;
+       function gold() {
+        document.getElementById("main").style.display = "none";
+        document.getElementById("gold_container").style.display = "block";
+        if (gold_fetched) {
+            return;
+        } 
+  fetch("https://freegoldapi.com/data/latest.json")
+    .then(res => res.json())
+    .then(data => {
+      console.log("RAW DATA:", data);
+
+      const table = document.getElementById("gold_table");
+
+      Object.values(data).forEach(item => {
+        table.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${item.source}</td>
+            <td>${item.date}</td>
+            <td>${item.price}</td>
+          </tr>
+        `);
+      });
+      gold_fetched = true;
+    })
+    .catch(err => console.error(err));
+}
+
       render_currencies_from();
       render_currencies_to();
       render_intersection();
       wake()
       document.getElementById("intersect_check").addEventListener("change", intersection_choice);
+      document.getElementById("gold_container").style.display = "none";
 </script>
 </body>
 </html>
